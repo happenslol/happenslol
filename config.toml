@@ -1,0 +1,26 @@
+title = "happens, lol"
+theme = "apollo"
+taxonomies = [{ name = "tags" }]
+
+base_url = "https://happens.lol"
+
+compile_sass = true
+minify_html = true
+build_search_index = true
+
+[markdown]
+highlight_code = true
+
+[extra]
+theme = "auto"
+
+socials = [
+  { name = "github", url = "https://github.com/happenslol/", icon = "github" },
+]
+
+menu = [
+  { name = "/posts", url = "/posts", weight = 1 },
+  { name = "/projects", url = "/projects", weight = 2 },
+  { name = "/about", url = "/about", weight = 3 },
+  # { name = "/tags", url = "/tags", weight = 4 },
+]
