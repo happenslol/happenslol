@@ -1,0 +1,9 @@
+version: "0.5"
+is_tui_disabled: true
+environment:
+  - "FORCE_COLOR=1"
+  - "CLICOLOR_FORCE=1"
+
+processes:
+  tailwind: { command: just tailwind-dev }
+  zola: { command: just zola-dev }
