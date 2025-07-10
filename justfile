@@ -9,3 +9,7 @@
 
 @dev:
   process-compose up
+
+@build:
+  tailwindcss -i ./styles.css -o ./static/styles.css
+  zola build

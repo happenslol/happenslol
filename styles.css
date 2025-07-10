@@ -1,23 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  font-family: Inter, sans-serif;
-  font-feature-settings:
-    /* fix for Chrome */
-    "liga" 1,
-    "calt" 1;
+	font-family: Inter, sans-serif;
+
+	/* fix for Chrome */
+	font-feature-settings:
+		"liga" 1,
+		"calt" 1;
 }
 
 @supports (font-variation-settings: normal) {
-  :root {
-    font-family: InterVariable, sans-serif;
-  }
-}
-
-body {
-  @apply w-full min-h-screen bg-neutral-800 text-neutral-100;
+	:root {
+		font-family: InterVariable, sans-serif;
+	}
 }
 
 @theme {
-  --font-display: "InterVariable", "sans-serif";
+	--color-accent: #ef5350;
+	--font-heading: "Space Grotesk", "sans-serif";
+	--spacing-content: 80ch;
+}
+
+@layer base {
+	a {
+		@apply underline decoration-accent decoration-2;
+
+		background-image: linear-gradient(var(--color-accent), var(--color-accent));
+		background-size: 100% 0;
+		background-repeat: no-repeat;
+		background-position: bottom;
+		transition: background-size 100ms ease-in-out;
+	}
+
+	a:hover {
+		background-size: 100% 100%;
+	}
+}
+
+@layer components {
+	.page-title {
+		@apply underline-offset-8 decoration-6 text-3xl font-bold font-heading;
+	}
+
+	.social-link {
+		@apply bg-none hover:bg-none transition-colors;
+	}
 }

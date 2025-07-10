@@ -1,6 +1,6 @@
 base_url = "https://happens.lol"
 compile_sass = false
-build_search_index = true
+build_search_index = false
 
 [markdown]
 highlight_code = true

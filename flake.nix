@@ -12,6 +12,8 @@
         process-compose
         tailwindcss_4
         watchman
+        biome
+        prettierd
       ];
     };
   };

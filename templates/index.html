@@ -1,5 +1,24 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
+<div class="max-w-content px-8">
+  <div class="flex flex-col gap-6 text-lg">
+    <h2 class="font-heading text-5xl font-bold">
+      Hi, I'm hilmar<span class="text-accent">.</span>
+    </h2>
 
-{% block content %}
-<h1>Hello world!</h1>
+    <p>
+      I'm a developer who's too busy to take care of this website at the moment.
+      😅
+    </p>
+
+    <p>
+      My area of expertise is creating modern and performant web applications
+      with Typescript, Go and Rust. Also, I'm a huge UX nerd.
+    </p>
+
+    <p>
+      If you want to work with me, shoot me an email at
+      <a href="mailto:hi@happens.lol">hi@happens.lol.</a>
+    </p>
+  </div>
+</div>
 {% endblock content %}
