@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
 	font-family: Inter, sans-serif;
 
@@ -18,7 +20,7 @@
 @theme {
 	--color-accent: #ef5350;
 	--font-heading: "Space Grotesk", "sans-serif";
-	--spacing-content: 80ch;
+	--spacing-content: 85ch;
 }
 
 @layer base {
@@ -45,4 +47,67 @@
 	.social-link {
 		@apply bg-none hover:bg-none transition-colors;
 	}
+
+	.prose p code,
+	.prose h1 code,
+	.prose h2 code,
+	.prose h3 code,
+	.prose h4 code,
+	.prose h5 code,
+	.prose h6 code {
+		@apply px-2 bg-neutral-200 dark:bg-neutral-800 py-0.5 text-red-700 dark:text-red-300 rounded-lg;
+	}
+}
+
+.prose {
+	@apply pb-12;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+	@apply pb-6 pt-8;
+}
+
+.prose h1 {
+	@apply text-3xl font-bold;
+}
+
+.prose h2 {
+	@apply text-2xl font-semibold;
+}
+
+.prose h3 {
+	@apply text-xl font-semibold;
+}
+
+.prose h4 {
+	@apply text-lg font-semibold;
+}
+
+.prose p {
+	@apply pb-4;
+}
+
+.prose ul {
+	@apply pl-4 list-disc pb-6;
+}
+
+.prose li {
+	@apply pb-2;
+}
+
+.prose pre {
+	@apply mb-8 overflow-x-auto px-6 py-4 rounded-lg;
+}
+
+.prose a code {
+	@apply bg-transparent px-0;
+}
+
+.prose a:hover code {
+	@apply text-white;
 }
