@@ -1,0 +1,11 @@
+{% extends "base.html" %} {% block content %}
+<div class="max-w-content w-full px-8 flex flex-col gap-8 flex-1">
+  <h1 class="text-3xl font-semibold">{{ section.title }}</h1>
+
+  <ul>
+    {% for page in section.pages %}
+    <li><a href="{{ page.permalink | safe }}">{{ page.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock content %}
