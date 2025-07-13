@@ -1,8 +1,8 @@
+title = "happens, lol"
 base_url = "https://happens.lol"
 compile_sass = false
 build_search_index = false
+generate_feeds = true
 
 [markdown]
 highlight_code = true
-
-[extra]

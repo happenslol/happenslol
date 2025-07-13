@@ -375,7 +375,7 @@ alias flake="just -f ~/.flake/justfile "
 
 Here's an excerpt from the `justfile`:
 
-```just
+```
 set shell := ["zsh", "-c"]
 alias a := apply
 

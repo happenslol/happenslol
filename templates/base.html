@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>happens, lol</title>
 
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -18,6 +17,48 @@
 
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+
+    {% if config.generate_feeds %}
+    <link
+      rel="alternate"
+      type="application/atom+xml"
+      title="RSS"
+      href="{{ get_url(path='atom.xml') | safe }}"
+    />
+    {% endif %}
+
+    <!-- Title -->
+    {% if page and page.title %} {% set title = [page.title, config.title] | join(sep = " - ") %} {% else %} {% set
+    title = config.title %} {% endif %}
+
+    <title>{% block title %} {{ title }} {% endblock title %}</title>
+    <meta
+      property="og:title"
+      content="{% block og_title %}{{ config.title }}{% endblock og_title %}"
+    />
+    <meta
+      name="twitter:title"
+      content="{% block twitter_title %}{{ config.title }}{% endblock twitter_title %}"
+    />
+
+    <!-- Additional Facebook Meta Tags -->
+    <meta
+      property="og:url"
+      content="{% if page %}{{ page.permalink }}{% else %}{{ config.base_url }}{% endif %}"
+    />
+    <meta
+      property="og:type"
+      content="{% if page %}article{% else %}website{% endif %}"
+    />
+    <meta property="og:title" content="{{ title }}" />
+
+    <!-- Additional Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:url"
+      content="{% if page %}{{ page.permalink }}{% else %}{{ config.base_url }}{% endif %}"
+    />
+    <meta name="twitter:title" content="{{ title }}" />
 
     <script>
       const getMode = () =>
