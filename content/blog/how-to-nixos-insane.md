@@ -13,6 +13,8 @@ After a lot of trial and error, I think I've landed on a good solution to achiev
 
 Note that this is not meant as a general introduction to NixOS - There are lots of great tutorials already. I'm only detailing how I use NixOS to achieve my goals with relatively little effort here.
 
+I'll omit a lot of settings I have in my config if they are specific to my needs. You can have a look at my full config [here](https://github.com/happens/flake). Feel free to shoot me a message if you have any questions!
+
 ## Keeping it Simple
 
 When looking at other NixOS configs, one thing that I see a lot is deeply nested directory structure, seperate files for every package that is installed, and custom modules with options that can be configured for every host.  
@@ -241,14 +243,155 @@ The most important thing to note here is that we use `mkOutOfStoreSymlink` to li
 
   # See above.
   dotfiles = config.lib.file.mkOutOfStoreSymlink "${home}/.flake/config";
-  hostDotfiles = config.lib.file.mkOutOfStoreSymlink "${home}/.flake/hosts/${hostname}/config";
 in {
+  # Enable home-manager
+  programs.home-manager.enable = true;
 
+  home = {
+    inherit stateVersion username;
+    homeDirectory = home;
+
+    # Install packages from `packages.nix`. I move around the structure here a
+    # bit so that file can be as simple as possible.
+    packages =
+      (builtins.concatLists (builtins.attrValues (import ./packages.nix pkgs)))
+      ++ (builtins.attrValues custom);
+
+    # Link dotfiles that live outside of `~/.config`.
+    file = {
+      ".gitconfig".source = "${dotfiles}/git/gitconfig";
+      ".ssh/config".source = "${dotfiles}/ssh/config";
+      # ...
+    };
+  };
+
+  # Link dotfiles inside `~/.config`.
+  xdg.configFile = {
+    "nvim".source = "${dotfiles}/nvim";
+    "kitty".source = "${dotfiles}/kitty";
+    # ...
+  };
+
+  # Add more home-manager configuration here.
 };
 ```
 
 ### `packages.nix`
 
+This could be included in `home.nix` (and previously was), but I like being able to quickly install packages without having to go through my `home.nix` by just adding them here. It's also nice to just have a list of everything I expect to be installed.
+
+```nix
+pkgs: {
+  pkgs = with pkgs; [git ripgrep kitty starship /* ... */];
+  node = with pkgs.nodePackages_latest; [vscode-langservers-extracted /* ... */];
+  beam = with pkgs.beam27Packages; [elixir elixir-ls /* ... */];
+
+  # ...and so on.
+}
+```
+
 ### `overlay.nix`
 
+Sometimes, I want to override options for a package or apply fixes. Instead of doing this configuration in `packages.nix`, I do it in an overlay, so the same things are applied everywhere the packages are used. As an example, some nix options allow specifying the package to use (like `home.pointerCursor.package = ...`), and it would be easy to forget overrides here.
+
+```nix
+self: super: {
+  # An example of a package I want to customize.
+  vesktop = super.vesktop.override {
+    electron = self.electron_33;
+    withTTS = false;
+  };
+}
+```
+
 ### `devshells.nix`
+
+Most of the time, `nix-ld` lets me run unpatched binaries if I want to try something out. When I want to build something myself which requires specific packages or runtime libraries, I used to just create a `flake.nix` ad-hoc, which got annoying over time. I define some devshells here that cover the most common usecases and let me quickly get these dependencies into my path if I need them.
+
+For example, I've been playing around with a lot of GUI libraries, which mostly have the same dependencies. This is the shell I created for those:
+
+```nix
+pkgs: {
+  gui = pkgs.mkShell rec {
+    packages = with pkgs; [libxkbcommon vulkan-loader wayland];
+    LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath packages;
+  };
+}
+```
+
+By running `echo "use flake ~/.flake#<name>" >> .envrc && direnv allow`, I'll have everything I need by default whenever I `cd` into the cloned project. This is instant most of the time, since it uses the same `nixpkgs` that are installed globally.
+
+### Host-specific config (`hosts/<name>/configuration.nix`)
+
+These are pretty minimal and mostly hardware dependant. Here's an example:
+
+```nix
+{ pkgs }: {
+  # Add nix-hardware modules
+  imports = [
+    inputs.nixos-hardware.nixosModules.common-cpu-amd
+    inputs.nixos-hardware.nixosModules.common-cpu-amd-pstate
+    inputs.nixos-hardware.nixosModules.common-gpu-amd
+    inputs.nixos-hardware.nixosModules.common-pc-ssd
+  ];
+
+  networking = {
+    hostId = "<random id>";
+    hostName = "<hostname>";
+  };
+
+  # Add kernel params and bootloader settings
+  boot = {
+    loader.systemd-boot.enable = true;
+    kernelParams = [/* ... */];
+  };
+
+  # Make sure building a config doesn't use all CPU and I can keep working
+  # during the build. I adjust this based on the machine.
+  nix.settings = {
+    cores = 6;
+    max-jobs = 4;
+  };
+
+  # Not all my machines have bluetooth, so it's enabled here
+  hardware.bluetooth.enabled = true;
+
+  # And so on.
+}
+```
+
+The `hardware-configuration.nix` file is copied directly from what generates during installation.
+
+# Everyday Usage
+
+Let's go through some workflows to see how this setup makes my life easier. To apply the config, I have a `justfile` for which I have a global alias in my zsh config:
+
+```zsh
+alias flake="just -f ~/.flake/justfile "
+```
+
+Here's an excerpt from the `justfile`:
+
+```just
+set shell := ["zsh", "-c"]
+alias a := apply
+
+# Switch to the current flake configuration
+@apply:
+  git add .
+  sudo nixos-rebuild switch --flake ~/.flake#
+```
+
+So, installing a package would be done by adding it to `packages.nix` and then running `flake a`.
+
+#### Updating dotfiles
+
+I just edit the dotfiles in `~/.flake/config`, and that's it. They are symlinked so any changes are directly visible to the respective program.
+
+#### Installing NixOS
+
+I start by booting into a NixOS live disk and formatting my drives. I'd eventually like to automate this completely using [`disko`](https://github.com/nix-community/disko) and [`nixos-anywhere`](https://github.com/nix-community/nixos-anywhere), but I ran into some issues last time I tried.
+
+Then, I clone the flake (`git clone https://github.com/happenslol/flake.git /home/happens/.flake`). If I'm adding a new host, I also generate a hardware config with `nixos-generate-config` and place it in a new host directory.
+
+After running `nixos-install --flake /home/happens/.flake#<hostname>`, I can boot into the fully configured system. I have to log in as `root` once and change the password for the user - there's probably a way to set the password during installation, but it's not a big deal to me.
